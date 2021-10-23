@@ -3,12 +3,12 @@ package main
 const man = `
 SYNOPSIS
 %s [-h | -usage | -version | -test] [-auth authfile] [-recipients recipientsfile] \
-          [-selectors selfile] [-subject subject] [-max maxRcpnts] \
-          [-skip skipRcpnts] mailtemplate [alternativetemplate]
+          [-selectors selfile] [-subject subject] [-max maxRcpnts] [-from from] \
+          [-quota quota][-skip skipRcpnts] mailtemplate
 
 DESCRIPTION
 The program sends a newsletter to a number of recipients. These recipients are
-read from a '.cvs' file where the fields are separated by semi-colons (';'). The
+read from a file where the fields are separated by semi-colons (';'). The
 default file used is 'model/recipients.csv'. It can be changed by providing a
 '-recipients' flag. Everything on a line in this file starting from a hash
 character ('#') will be disregarded. When a line is empty or only contain white
@@ -43,7 +43,7 @@ fields in the recipientsfile. Based on the example above it could be:
 The file with the selectors can be changed by providing the '-selectors sel'
 arguments.
 Note: the fieldnames can be used in the templates for replacement by its value.
-In the case of the example above a template could have the follown line:
+In the case of the example above a template could have the following line:
 
   Email {{.Get "EMail"}} belongs to {{.Get "name"}}.
 
@@ -59,13 +59,17 @@ will be sent.
 
 By using the '-skip' and '-max' flags one can send the newsletters in batches.
 
+When the '-quota quota' is provided and 'quota' is greater than zero, no more
+than 'quota' newsletters will be sent within a duration of one hour.
+
 When the '-test' flag is provided, newsletters will only be sent to a number of
 selected recipients.
 
 To gain access to some SMTP server to send the newsletters the program reads
 an authorisation file. It must contain a number of values to access the
-server. Each line should contain a keyword ("from", "hostname", "port",
-"password", "username"), then a colon followed by an appropiate value.
+server. Each line should contain a keyword ("sender", "hostname", "port",
+"password", "username"), then a colon followed by an appropiate value (the case
+used for the keywords will be neglegted).
 The default value for the filepath is ".auth.txt". It can be changed by
 providing a '-auth' flag. So it should look like:
 
@@ -73,12 +77,14 @@ providing a '-auth' flag. So it should look like:
   port:     587
   username: someusername
   password: somepassword
-  from:     noreply@somedomain.com
+  sender:   noreply@somedomain.com
 
 Note: this file should only be readable by the owner of the program.
 
 The subject for the e-mail holding the newsletter is set to "Newsletter".
 It can be changed by providing a '-subject' flag.
+
+The '-from from' flag can be used to set the address for the originator.
 
 By providing a '-usage' flag the program shows this summary about the usage and
 quits (alternavely one can provide the '-h' flag to display the use of the
@@ -86,17 +92,24 @@ flags).
 
 By providing a '-version' flag the program shows a the version number and quits.
 
-The program expects one or two arguments holding the paths to files with the
-templates for construction of the newsletter. A path ending with a ".txt"
-extension will be used to construct a plain text version of the newsletter.
-When the path ends with a ".html" extension a HTML version will be
-constructed. Mails can hold both newsletters. Most modern e-mail clients will
+The program expects one one argument holding the paths to the file with the
+template for construction of the newsletter. Mails can hold both a plain version
+of the mail body and an HTML version. Most modern e-mail clients will
 then only display the HTML version. Oldfashioned e-mail clients display the
 plain version.
-Note: when two paths have the same extension, only the last path will be
-used!
+The file should have a content like:
 
-When in these files some text in the form {{.Get "fieldname"}} is found, it will
+  {{define "plainBody"}}
+  <!--here the content for the plain template. -->
+  {{end}}
+  {{define "htmlBody"}}
+  <!-- here the content for the HTML template. -->
+  {{end}}
+
+When both the '{{define "..."}}...{{end}}' parts are missing, the program
+assumes tha the whole content of the file is a plain template.
+
+When in this file some text in the form {{.Get "fieldname"}} is found, it will
 be replaced by the value in the field named 'fieldname' in the file with the
 recipients. So {{.Get "EMail"}} will be replaced by the e-mail address of the
 recipient.

@@ -19,18 +19,16 @@ var (
 )
 
 // Recipient maps the field names to their value
-type Recipient struct {
-	m map[string]string
+type Recipient map[string]string
+
+// Get returns the value for the key.
+func (rcpnt Recipient) Get(key string) string {
+	return rcpnt[key]
 }
 
-// Get ...
-func (rcpnt *Recipient) Get(s string) string {
-	return rcpnt.m[s]
-}
-
-// Set ...
-func (rcpnt *Recipient) Set(fieldName, value string) {
-	rcpnt.m[strings.TrimSpace(fieldName)] = strings.TrimSpace(value)
+// Set sets the value for key
+func (rcpnt Recipient) Set(key, value string) {
+	rcpnt[strings.TrimSpace(key)] = strings.TrimSpace(value)
 }
 
 // selector is a struct for testing a value in a field
@@ -80,9 +78,7 @@ func Read(path string) (*Selectors, error) {
 // when the recipient has a valid e-mail address.
 func (slctrs Selectors) TestRecipient(line string) (*Recipient, bool) {
 	fields := strings.Split(line, ";")
-	rcpnt := Recipient{
-		m: make(map[string]string, 0),
-	}
+	rcpnt := Recipient(make(map[string]string, 0))
 
 	ls := len(slctrs)
 	lf := len(fields)
