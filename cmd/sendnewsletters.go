@@ -107,11 +107,10 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 					count, n+1, email)
 			}
 			if err != nil {
-				cfg.infLog.Printf("(%5d) failed to send email to %q: %s",
-					count, email, err.Error())
-			} else {
-				cfg.infLog.Printf("(%5d) email sent to %q", count, email)
+				return fmt.Errorf("(%5d) failed to send email to %q: %w",
+					count, email, err)
 			}
+			cfg.infLog.Printf("(%5d) email sent to %q", count, email)
 			if cfg.maxRcpnts--; cfg.maxRcpnts <= 0 {
 				break
 			}
