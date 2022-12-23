@@ -99,12 +99,19 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 				// Embedd:     []string{filepath.Join(..., "logo.jpg")}
 				// Attachments: ...,
 			}
-			if err = dlr.DialAndSend(sendCfg.BuildMessage()); err != nil {
-				return fmt.Errorf("(%5d) failed to send email to %q: %w",
-					count, email, err)
+			for n := 0; n < 3; n++ {
+				if err = dlr.DialAndSend(sendCfg.BuildMessage()); err == nil {
+					break
+				}
+				cfg.infLog.Printf("(%5d) retry (%d) to send email to %q",
+					count, n+1, email)
 			}
-			cfg.infLog.Printf("(%5d) mailing sent to %q", count, email)
-
+			if err != nil {
+				cfg.infLog.Printf("(%5d) failed to send email to %q: %s",
+					count, email, err.Error())
+			} else {
+				cfg.infLog.Printf("(%5d) email sent to %q", count, email)
+			}
 			if cfg.maxRcpnts--; cfg.maxRcpnts <= 0 {
 				break
 			}
