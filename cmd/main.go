@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"time"
@@ -28,7 +29,7 @@ func main() {
 		"Path to auth file")
 	flag.StringVar(&cfg.from, "from", "",
 		"Reply address")
-	flag.IntVar(&cfg.maxRcpnts, "max", 100,
+	flag.IntVar(&cfg.maxRcpnts, "max", 0,
 		"Maximum number of newsletters to be sent")
 	quota := flag.Int("quota", 0,
 		"Maximum number of newsletters to be sent during one hour")
@@ -42,21 +43,12 @@ func main() {
 		"Path to selectors file")
 	flag.StringVar(&cfg.subject, "subject", "Newsletter",
 		"Subject of the mailing")
-	test := flag.Bool("test", false,
-		"Test by sending the newsletter only to some selected adresses")
-	usage := flag.Bool("usage", false,
-		"Show usage and exit")
 	version := flag.Bool("version", false,
 		"Show version number and exit")
 	flag.Parse()
 
 	if *version {
 		fmt.Printf("version 3.0\n")
-		return
-	}
-
-	if *usage {
-		fmt.Printf(man, filepath.Base(os.Args[0])) // for man: see vars.go
 		return
 	}
 
@@ -69,17 +61,12 @@ func main() {
 	}
 
 	if cfg.maxRcpnts <= 0 {
-		errLog.Fatalf("non positive number for max: %d", cfg.maxRcpnts)
+		cfg.maxRcpnts = math.MaxInt64
 	}
 
 	cfg.sleepTime = 0
 	if *quota > 0 {
 		cfg.sleepTime = time.Duration((3600 / *quota) * int(time.Second))
-	}
-
-	if *test {
-		cfg.pathToSelectorsFile = filepath.Join(".", "tests", "selectors_test.txt")
-		cfg.pathToRecipientsFile = filepath.Join(".", "tests", "recipients_test.csv")
 	}
 
 	status := 0
