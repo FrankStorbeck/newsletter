@@ -5,7 +5,7 @@ _newsletter_ is `cli` program to send a newsletter to a (sub)group of
 
 Usage:
 
-newsletter [-auth _authfile_] [-from _sender_] [-max _m_] [-quota _q_]  \\ \
+newsletter [-auth _authfile_] [-from _from-address_] [-max _m_] [-quota _q_]  \\ \
            [-recipients _recfile_]  [-selectors _selfile_] [-skip _s_] \\ \
            [-subject _sbjct_] [-version] _template_
 
@@ -13,7 +13,7 @@ newsletter [-auth _authfile_] [-from _sender_] [-max _m_] [-quota _q_]  \\ \
 
  - _autfile_ is the path to the file with the authorisation data (default
   `./.auth.txt`).
- - _sender_ is the reply address.
+ - _from-address_ is the reply address.
  - _m_ is the maximum number of newsletters to be sent (default `100`).
  - _q_ is the maximum number of newsletters that the SMTP server accepts per
    hour (default unlimited).
@@ -22,7 +22,9 @@ newsletter [-auth _authfile_] [-from _sender_] [-max _m_] [-quota _q_]  \\ \
  - _selfile_ is the path to the file with the selection criteria (default
    `./model/selectors.txt`).
  - _s_ is the number of entries in the subscriber file that must be skipped
-   before starting sending the newsletters (default `0`).
+   before starting sending the newsletters (default `0`). This can be used when
+   sending the newsletter has been terminated too early for some reason and the
+   program has to be restarted.
  - _sbjct_ is the subject for the email holding the newsletter (default `Newsletter`).
  - if the `-version` flag is given, the program shows its version number and
    then exits.

@@ -42,8 +42,6 @@ func main() {
 		"Path to selectors file")
 	flag.StringVar(&cfg.subject, "subject", "Newsletter",
 		"Subject of the mailing")
-	test := flag.Bool("test", false,
-		"Test by sending the newsletter only to some selected adresses")
 	usage := flag.Bool("usage", false,
 		"Show usage and exit")
 	version := flag.Bool("version", false,
@@ -75,11 +73,6 @@ func main() {
 	cfg.sleepTime = 0
 	if *quota > 0 {
 		cfg.sleepTime = time.Duration((3600 / *quota) * int(time.Second))
-	}
-
-	if *test {
-		cfg.pathToSelectorsFile = filepath.Join(".", "tests", "selectors_test.txt")
-		cfg.pathToRecipientsFile = filepath.Join(".", "tests", "recipients_test.csv")
 	}
 
 	status := 0
