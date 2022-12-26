@@ -18,9 +18,9 @@ newsletter [-auth _authfile_] [-from _from-address_] [-max _m_] [-quota _q_]  \\
  - _q_ is the maximum number of newsletters that the SMTP server accepts per
    hour (default unlimited).
  - _recfile_ is the path to the file with the subscribers (default
-   `./model/recipients.csv`).
+   `./recipients.csv`).
  - _selfile_ is the path to the file with the selection criteria (default
-   `./model/selectors.txt`).
+   `./selectors.txt`).
  - _s_ is the number of entries in the subscriber file that must be skipped
    before starting sending the newsletters (default `0`). This can be used when
    sending the newsletter has been terminated too early for some reason and the
