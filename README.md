@@ -14,7 +14,8 @@ newsletter [-auth _authfile_] [-from _from-address_] [-max _m_] [-quota _q_]  \\
  - _autfile_ is the path to the file with the authorisation data (default
   `./.auth.txt`).
  - _from-address_ is the reply address.
- - _m_ is the maximum number of newsletters to be sent (default `100`).
+ - _m_ is the maximum number of newsletters to be sent (for some SMTP servers
+   that limits this.)
  - _q_ is the maximum number of newsletters that the SMTP server accepts per
    hour (default unlimited).
  - _recfile_ is the path to the file with the subscribers (default
