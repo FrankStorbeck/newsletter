@@ -49,7 +49,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("sendnewsletter v4.0\n")
+		fmt.Printf("newsletter v4.1\n")
 		return
 	}
 
