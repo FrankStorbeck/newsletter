@@ -1,0 +1,2 @@
+ID               = "^[0-9]+$"
+wants newsletter = "^(Y|y)+(es){0,1}$"
