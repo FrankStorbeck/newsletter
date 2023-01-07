@@ -1,0 +1,23 @@
+{{define "plainBody"}}
+Hello {{.Get "first name"}} {{.Get "middle names"}} {{.Get "family name"}}.
+{{end}}
+
+{{define "htmlBody"}}
+<!DOCTYPE html>
+<html xmlns="https://www.w3.org/1999/xhtml">
+  <head>
+    <title>Newsletter</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
+    <style type="text/css">
+      body{
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Hello {{.Get "first name"}} {{.Get "middle names"}} {{.Get "famil name"}}.</p>
+  </body>
+</html>
+{{end}}

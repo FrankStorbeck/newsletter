@@ -2,100 +2,115 @@ package selectors
 
 import (
 	"bufio"
+	"errors"
 	"os"
 	"regexp"
 	"strings"
 )
 
 const (
-	// EMail is a name of the field holding a valid e-mail address for a recipient
-	EMail = "EMail"
+	// EMailColName is a name of the column holding a valid e-mail address for a recipient
+	EMailColName = "email"
 )
 
+// Errors
 var (
+	ErrFieldsMissing = errors.New("Too few fields")
+	ErrInvalidEMail  = errors.New("Invalid e-mail")
+	ErrNoMatch       = errors.New("No match")
+
 	rxEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+" +
 		"@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9]" +
 		"(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
-// Recipient maps the field names to their value
-type Recipient map[string]string
+// Selectors holds the Selectors for columns
+type Selectors map[string]*regexp.Regexp
 
-// Get returns the value for the key.
-func (rcpnt Recipient) Get(key string) string {
-	return rcpnt[key]
-}
-
-// Set sets the value for key
-func (rcpnt Recipient) Set(key, value string) {
-	rcpnt[strings.TrimSpace(key)] = strings.TrimSpace(value)
-}
-
-// selector is a struct for testing a value in a field
-type selector struct {
-	fieldName string // name of the field
-	value     string // value that the field must have for selection
-}
-
-// Selectors holds the Selectors for fields
-type Selectors []selector
-
-// Read reads the Selectors from a file located at path. Each line
-// holds the name of the field, then a `=` charcter and then the value a field
-// must have in order to be selected as a valid recipient. The order of the
-// lines should be the same as the order of the fields (collumns) in the the
-// files with the recipents.
-func Read(path string) (*Selectors, error) {
-	slctrs := Selectors{}
-
-	f, err := os.Open(path)
+// New returns a new slice with selectors. pathToSelectorsFile is the path
+// to a selectors file. Each line in it should contain a column name followed by
+// an `=` character and a regular expression to be used for testing if the value
+// in the column matches. The regular expression must be surrounded by quoting
+// characters (`"`).
+func New(pathToSelectorsFile string) (*Selectors, error) {
+	f, err := os.Open(pathToSelectorsFile)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
+	slctrs := make(Selectors, 0)
 	scanner := bufio.NewScanner(f)
 
-	i := 0
 	for scanner.Scan() {
 		if err = scanner.Err(); err != nil {
 			return nil, err
 		}
 
-		line := scanner.Text()
-		fields := strings.Split(line, "=")
+		fields := strings.Split(scanner.Text(), "=")
 		if len(fields) >= 2 {
-			slctrs = append(slctrs, selector{fields[0], fields[1]})
+			if colName := strings.ToLower(strings.TrimSpace(fields[0])); len(colName) > 0 {
+				re := ""
+				if i := strings.IndexByte(fields[1], '"'); i >= 0 {
+					if j := strings.LastIndexByte(fields[1], '"'); j > i {
+						re = fields[1][i+1 : j]
+					}
+				}
+				if len(re) > 0 {
+					slctrs[colName], err = regexp.Compile(re)
+					if err != nil {
+						return &slctrs, err
+					}
+				}
+			}
 		}
-		i++
 	}
 
 	return &slctrs, nil
 }
 
-// TestRecipient tests if line holds a recipient eligible for sending a
-// newsletter. The test passes when all Selectors find a correct field value and
-// when the recipient has a valid e-mail address.
-func (slctrs Selectors) TestRecipient(line string) (*Recipient, bool) {
-	fields := strings.Split(line, ";")
-	rcpnt := Recipient(make(map[string]string, 0))
+// Select tests if line holds the data for a recipient eligible for
+// receiving a newsletter. The test passes when all selectors find a matching
+// value in the collumns. Also the value in the collumn named Email must a
+// valid address. ColNames must hold the collumn names for the
+func (slctrs Selectors) Select(fields, colNames []string) (*Recipient, error) {
+	l := len(fields)
+	if l > len(colNames) {
+		l = len(colNames)
+	}
 
-	ls := len(slctrs)
-	lf := len(fields)
-	for i := 0; i < ls; i++ {
-		if i >= lf {
-			// missing fields never match
-			return nil, false
+	rcpnt := make(Recipient, l)
+	for i := 0; i < l; i++ {
+		key := colNames[i]
+		value := strings.TrimSpace(fields[i])
+		if re, ok := slctrs[key]; ok {
+			if !re.MatchString(value) {
+				return nil, ErrNoMatch
+			}
 		}
-		v := slctrs[i].value
-		if v != "*" && fields[i] != v {
-			return nil, false
+		if key == EMailColName {
+			switch {
+			case len(value) == 0:
+				return nil, ErrNoMatch
+			case !rxEmail.MatchString(value):
+				return nil, ErrInvalidEMail
+			}
 		}
-		rcpnt.Set(slctrs[i].fieldName, fields[i])
+		rcpnt[key] = value
 	}
-	if em := rcpnt.Get(EMail); len(em) == 0 || !rxEmail.MatchString(em) {
-		return nil, false
-	}
-	// missing selectors always match
-	return &rcpnt, true
+
+	return &rcpnt, nil
+}
+
+// Recipient maps the column names to their value
+type Recipient map[string]string
+
+// Get returns the recipients value for a column name.
+func (rcpnt Recipient) Get(colName string) string {
+	return rcpnt[colName]
+}
+
+// Set sets the value for key
+func (rcpnt Recipient) Set(colName, value string) {
+	rcpnt[strings.TrimSpace(colName)] = value
 }

@@ -7,4 +7,5 @@
 #project specific
 go.sum
 .auth.txt
+test.sh
 model/

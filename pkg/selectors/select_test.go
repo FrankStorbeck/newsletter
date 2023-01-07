@@ -1,52 +1,50 @@
 package selectors
 
 import (
-	"bufio"
-	"bytes"
-	"os"
 	"strings"
 	"testing"
-	"text/template"
 )
 
+var path = "../../tests/selectors.txt"
+
 func TestSelect(t *testing.T) {
-	slctrs, err := Read("../../tests/selectors_test.txt")
+	slctrs, err := New(path)
 	if err != nil {
-		t.Fatalf("Read() returns an error: %s", err.Error())
+		t.Fatalf("For Select: New(%q) returns an error: %s", path, err.Error())
 	}
 
-	f, err := os.Open("../../tests/recipients_test.csv")
-	if err != nil {
-		t.Fatalf("os.Open() returns an error: %s", err.Error())
+	tests := []struct {
+		name string
+		line string
+		err  error
+	}{
+		{"Missing", "", ErrNoMatch},
+		{"OK", "1;John;O';Doe;john@company.com;Street;10;8900;un;Yes;comment", nil},
+		{"Wrong ID", "2_;John;O';Doe;john@company.com;;;;;Yes", ErrNoMatch},
+		{"Wrong family name", "3;John;O';Did;john@company.com;;;;;Yes", ErrNoMatch},
+		{"No email", "4;John;O';Doe;;Street;10;8900;un;Yes", ErrNoMatch},
+		{"Wrong email", "5;John;O';Doe;john;Street;10;8900;un;Yes", ErrInvalidEMail},
 	}
-	defer f.Close()
 
-	scanner := bufio.NewScanner(f)
+	colNames := []string{"id", "first name", "middle names", "family name", "email", "street", "number", "zip", "country", "wants newsletter"}
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		if i := strings.Index(line, "#"); i >= 0 {
-			line = line[:i]
-		}
-		if len(line) > 0 {
-			rcpnt, ok := slctrs.TestRecipient(scanner.Text())
-			if ok {
-				tmpl, err := template.New("test").Parse("{{.Get \"EMail\" }} belongs to {{.Get \"FirstName\"}} {{.Get \"MiddleNames\"}} {{.Get \"FamilyName\"}}")
-				if err != nil {
-					t.Fatalf("Cannot create template test: %s", err.Error())
-				}
-				body := new(bytes.Buffer)
-				err = tmpl.Execute(body, rcpnt)
-				if err != nil {
-					t.Fatalf("Cannot create output from template: %s", err.Error())
-				}
-				want := "frank@storbeck.nl belongs to F.  Storbeck"
-				if got := body.String(); got != want {
-					t.Errorf("Result is\n%q\nshould be\n%q", got, want)
-				}
-			} else {
-				t.Errorf("failure")
+	for _, tst := range tests {
+		record := strings.Split(tst.line, ";")
+		_, err := slctrs.Select(record, colNames)
+		switch {
+		case tst.err == nil && err != nil:
+			t.Errorf("%s: Select() returns an error %q, should be nil",
+				tst.name, err.Error())
+		case tst.err != nil && err == nil:
+			t.Errorf("%s: Select() returns no error, should be %q",
+				tst.name, tst.err.Error())
+		case tst.err != nil && err != nil:
+			if tst.err != err {
+				t.Errorf("%s: Select() returns error %q, should be %q",
+					tst.name, err.Error(),
+					tst.err.Error())
 			}
+		default:
 		}
 	}
 }
