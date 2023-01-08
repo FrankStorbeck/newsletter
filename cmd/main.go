@@ -39,11 +39,11 @@ func main() {
 	flag.StringVar(&cfg.pathToSelectorsFile, "selectors", "selectors.txt",
 		"Path to selectors file")
 	flag.IntVar(&cfg.skipRcpnts, "skip", 0,
-		"Number selected recipients to be skipped before sending the 1st newsletter")
+		"Number of selected recipients to be skipped before sending the 1st newsletter")
 	flag.StringVar(&cfg.subject, "subject", "News letter",
 		"Subject of the mailing")
 	flag.StringVar(&cfg.pathToSubscribersFile, "subscribers", "subscribers.csv",
-		"Path to recipients file")
+		"Path to subscribers file")
 	version := flag.Bool("version", false,
 		"Show version number and exit")
 	flag.Parse()

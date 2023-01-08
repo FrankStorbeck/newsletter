@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/csv"
-	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -41,7 +39,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 		return fmt.Errorf("reading subscribers file fails: %w", err)
 	}
 
-	count := 0
+	recNo := 0
 	firstLine := true
 	var colNames []string
 
@@ -59,6 +57,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 			}
 			return fmt.Errorf("reading record from subscribers file fails: %w", err)
 		}
+		recNo++
 
 		if firstLine {
 			colNames = make([]string, len(record))
@@ -69,10 +68,9 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 			continue
 		}
 
-		count++
-		if count <= cfg.skipRcpnts {
-			if count == cfg.skipRcpnts {
-				cfg.infLog.Printf("skipped %d newsletters", count)
+		if recNo <= cfg.skipRcpnts {
+			if recNo == cfg.skipRcpnts {
+				cfg.infLog.Printf("skipped %d subscribers", recNo)
 			}
 			continue
 		}
@@ -80,7 +78,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 		rcp, err := sls.Select(record, colNames)
 		if err != nil {
 			if err != selectors.ErrNoMatch {
-				cfg.errLog.Printf("(%5d) %s", count, err.Error())
+				cfg.errLog.Printf("record %d: %s", recNo, err.Error())
 			}
 			continue
 		}
@@ -118,26 +116,29 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 			// Embedd:     []string{filepath.Join(..., "logo.jpg")}
 			// Attachments: ...,
 		}
+
 		dryTxt := ""
 		if cfg.dry {
 			dryTxt = "dry run: "
 		}
+
 		for n := 0; n < 3; n++ {
 			if !cfg.dry {
 				err = dlr.DialAndSend(sendCfg.BuildMessage())
 			} else {
 				err = dryDialAndSend()
 			}
-			if err != nil {
-				cfg.errLog.Printf("(%5d) %sretry (%d) to send email to %q",
-					count, dryTxt, n+1, email)
+			if err == nil {
+				break
 			}
+			cfg.errLog.Printf("record %d: %sretry (%d) to send email to %q",
+				recNo, dryTxt, n+1, email)
 		}
 		if err != nil {
 			cfg.errLog.Printf("(%5d) %sfailed to send email to %q: %s",
-				count, dryTxt, email, err)
+				recNo, dryTxt, email, err)
 		} else {
-			cfg.infLog.Printf("(%5d) %semail sent to %q", count, dryTxt, email)
+			cfg.infLog.Printf("record %d: %semail sent to %q", recNo, dryTxt, email)
 		}
 
 		if cfg.maxRcpnts--; cfg.maxRcpnts <= 0 {
@@ -154,9 +155,9 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 }
 
 func dryDialAndSend() (err error) {
-	// in a dry run generate a error in about 1 of 20 cases
-	if rand.Intn(20) > 18 {
-		err = errors.New("dry run error")
-	}
+	// // in a dry run generate a error in about 1 of 3 cases
+	// if rand.Intn(3) >= 2 {
+	// 	err = errors.New("dry run error")
+	// }
 	return
 }

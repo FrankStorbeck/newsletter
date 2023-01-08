@@ -69,10 +69,10 @@ func New(pathToSelectorsFile string) (*Selectors, error) {
 	return &slctrs, nil
 }
 
-// Select tests if line holds the data for a recipient eligible for
-// receiving a newsletter. The test passes when all selectors find a matching
-// value in the collumns. Also the value in the collumn named Email must a
-// valid address. ColNames must hold the collumn names for the
+// Select tests if a subscriber is eligible for receiving a newsletter. fields
+// must hold the field values for the subscriber's record and colNames the
+// collumn names for these fields. The length of fields will be truncated to the
+// length of colNames.
 func (slctrs Selectors) Select(fields, colNames []string) (*Recipient, error) {
 	l := len(fields)
 	if l > len(colNames) {
@@ -83,7 +83,7 @@ func (slctrs Selectors) Select(fields, colNames []string) (*Recipient, error) {
 	for i := 0; i < l; i++ {
 		key := colNames[i]
 		value := strings.TrimSpace(fields[i])
-		if re, ok := slctrs[key]; ok {
+		if re, found := slctrs[key]; found {
 			if !re.MatchString(value) {
 				return nil, ErrNoMatch
 			}
