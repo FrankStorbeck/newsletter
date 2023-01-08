@@ -45,8 +45,9 @@ Data are read from three files.
   must be separated by semi-colons (`;`). The first record must hold
   the names of the columns. **Capitals in these names are changed into their
   lower case counterparts. Leading and trailing spaces are removed.**
+  Empty lines and lines starting with a `#` characters are skipped.
   The column names can be used in the template to format the newsletter.  
-  E.g. if a column name is `name`, then the text element `{{.Get "Name"}}` in
+  E.g. if a column name is `name`, then the text element `{{.Get "name"}}` in
   the template file will replaced by the field value. There must be one column
   named _email_ holding a valid email address of the subscribers (if this field
   is empty no email will be sent).
@@ -76,7 +77,7 @@ Data are read from three files.
   As an example, to send the newsletter only to all members of the family `O'
   Doe`, but only those who want to receive the newsletter:
 ```
-middle name      = "^O'$"
+middle names     = "^O'$"
 family name      = "^Doe$"
 wants newsletter = "^(Y|y)+(es){0,1}$"
 ```
@@ -86,7 +87,7 @@ wants newsletter = "^(Y|y)+(es){0,1}$"
   recognised key values are _hostname_ for the name of the SMTP server, _port_
   for the port number to be used to deliver the email, _username_ /_password_
   for the login credentials, _sender_ for the originator of the email and
-  _from_ for reply address. The content of this file should be kept secret.
+  _from_ for the reply address. The contents of this file should be kept secret.
 
   As an example:
 ```
