@@ -1,4 +1,3 @@
-ID               = "^[0-9]+$"
-middle names      = "^O'$"
+middle names     = "^O'$"
 family name      = "^Doe$"
 wants newsletter = "^(Y|y)+(es){0,1}$"

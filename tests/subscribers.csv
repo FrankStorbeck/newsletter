@@ -1,2 +1,8 @@
-ID;first name;middle names;family name;email;street;number;city;zip;country;wants newsletter
-1;John;O;Doe;john@doe-family.com;Main street;20;Capital;1000;UN;Yes;Former secretary
+ID;First name;Middle names;Family name;Email address       ;Wants newsletter
+1 ;Bob       ;            ;Crypt      ;bob@crpt.com        ;y
+2 ;John      ;O'          ;Doe        ;john@company.com    ;Yes
+3 ;Joyce     ;O'          ;Doe        ;joyce@doe-family.com;Yes
+4 ;Johny     ;O'          ;Doe        ;johny@doe-family.com;y
+5 ;Karin     ;            ;Sheppard   ;                    ;y
+6 ;Daisy     ;O'          ;Doe        ;daisy.doe-family.com;Y
+7 ;Alice     ;            ;Crypt      ;alice@crpt.com      ;n

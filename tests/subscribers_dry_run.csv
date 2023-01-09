@@ -1,8 +1,0 @@
-id;first name;middle names;family name;email_address       ;wants newsletter
-1 ;Bob       ;            ;Crypt      ;bob@crpt.com        ;y
-2 ;John      ;O'          ;Doe        ;john@company.com    ;Yes
-3 ;Joyce     ;O'          ;Doe        ;joyce@doe-family.com;Yes
-4 ;Johny     ;O'          ;Doe        ;johny@doe-family.com;y
-5 ;Karin     ;            ;Sheppard   ;                    ;y
-6 ;Daisy     ;O'          ;Doe        ;daisy.doe-family.com;Y
-7 ;Alice     ;            ;Crypt      ;alice@crpt.com      ;n

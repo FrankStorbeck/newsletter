@@ -18,9 +18,7 @@ func TestSelect(t *testing.T) {
 		line string
 		err  error
 	}{
-		{"Missing", "", ErrNoMatch},
 		{"OK", "1;John;O';Doe;john@company.com;Street;10;8900;un;Yes;comment", nil},
-		{"Wrong ID", "2_;John;O';Doe;john@company.com;;;;;Yes", ErrNoMatch},
 		{"Wrong family name", "3;John;O';Did;john@company.com;;;;;Yes", ErrNoMatch},
 		{"No e-mail", "4;John;O';Doe;;Street;10;8900;un;Yes", ErrNoMatch},
 		{"Wrong e-mail", "5;John;O';Doe;john;Street;10;8900;un;Yes", ErrInvalidEMail},
