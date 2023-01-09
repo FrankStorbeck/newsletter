@@ -40,7 +40,6 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 	}
 
 	recNo := 0
-	firstLine := true
 	var colNames []string
 
 	r := csv.NewReader(f)
@@ -48,6 +47,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 	r.Comment = '#'
 	r.FieldsPerRecord = -1
 	r.ReuseRecord = true
+	indexEMail := -1
 
 	for {
 		record, err := r.Read()
@@ -59,31 +59,42 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 		}
 		recNo++
 
-		if firstLine {
+		if recNo == 1 {
+			// collect the collumn names
 			colNames = make([]string, len(record))
 			for i, name := range record {
-				colNames[i] = strings.ToLower(strings.TrimSpace(name))
+				name = strings.ToLower(strings.TrimSpace(name))
+				colNames[i] = name
+				if name == cfg.emailColName {
+					indexEMail = i
+				}
 			}
-			firstLine = false
+			if indexEMail < 0 {
+				return fmt.Errorf("no column named %q with e-mail addresses found",
+					cfg.emailColName)
+			}
 			continue
 		}
 
 		if recNo <= cfg.skipRcpnts {
+			// skipping...
 			if recNo == cfg.skipRcpnts {
 				cfg.infLog.Printf("skipped %d subscribers", recNo)
 			}
 			continue
 		}
 
-		rcp, err := sls.Select(record, colNames)
+		// get recipient
+		rcp, err := sls.Select(record, colNames, indexEMail)
 		if err != nil {
+			// skip this recipient
 			if err != selectors.ErrNoMatch {
 				cfg.errLog.Printf("record %d: %s", recNo, err.Error())
 			}
 			continue
 		}
 
-		email := rcp.Get(selectors.EMailColName) // rcp always contains a valid email here
+		eMailAddress := record[indexEMail]
 
 		plainBody, err := sendmail.Body("plainBody", tmplt, rcp)
 		if err != nil {
@@ -109,7 +120,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 		sendCfg := sendmail.Config{
 			Sender:    ath.Value("sender"),
 			From:      sendmail.NamedAddress{EMail: from, Name: ""},
-			To:        []sendmail.NamedAddress{{EMail: email, Name: ""}},
+			To:        []sendmail.NamedAddress{{EMail: eMailAddress, Name: ""}},
 			Subject:   cfg.subject,
 			PlainText: plainBody,
 			HTMLText:  htmlBody,
@@ -131,14 +142,15 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 			if err == nil {
 				break
 			}
-			cfg.errLog.Printf("record %d: %sretry (%d) to send email to %q",
-				recNo, dryTxt, n+1, email)
+			cfg.errLog.Printf("record %d: %sretry (%d) to send e-mail to %q",
+				recNo, dryTxt, n+1, eMailAddress)
 		}
 		if err != nil {
-			cfg.errLog.Printf("(%5d) %sfailed to send email to %q: %s",
-				recNo, dryTxt, email, err)
+			cfg.errLog.Printf("record %d: %sfailed to send e-mail to %q: %s",
+				recNo, dryTxt, eMailAddress, err)
 		} else {
-			cfg.infLog.Printf("record %d: %semail sent to %q", recNo, dryTxt, email)
+			cfg.infLog.Printf("record %d: %semail sent to %q",
+				recNo, dryTxt, eMailAddress)
 		}
 
 		if cfg.maxRcpnts--; cfg.maxRcpnts <= 0 {

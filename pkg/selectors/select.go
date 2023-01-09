@@ -8,11 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	// EMailColName is a name of the column holding a valid e-mail address for a recipient
-	EMailColName = "email"
-)
-
 // Errors
 var (
 	ErrFieldsMissing = errors.New("Too few fields")
@@ -73,7 +68,9 @@ func New(pathToSelectorsFile string) (*Selectors, error) {
 // must hold the field values for the subscriber's record and colNames the
 // collumn names for these fields. The length of fields will be truncated to the
 // length of colNames.
-func (slctrs Selectors) Select(fields, colNames []string) (*Recipient, error) {
+// Also a test is done to validate the e-mail address in the column with
+// index indexEMail. An empty value or an illegal address result in an error.
+func (slctrs *Selectors) Select(fields, colNames []string, indexEmail int) (*Recipient, error) {
 	l := len(fields)
 	if l > len(colNames) {
 		l = len(colNames)
@@ -83,12 +80,13 @@ func (slctrs Selectors) Select(fields, colNames []string) (*Recipient, error) {
 	for i := 0; i < l; i++ {
 		key := colNames[i]
 		value := strings.TrimSpace(fields[i])
-		if re, found := slctrs[key]; found {
+		if re, found := (*slctrs)[key]; found {
 			if !re.MatchString(value) {
 				return nil, ErrNoMatch
 			}
 		}
-		if key == EMailColName {
+
+		if i == indexEmail {
 			switch {
 			case len(value) == 0:
 				return nil, ErrNoMatch
@@ -110,7 +108,7 @@ func (rcpnt Recipient) Get(colName string) string {
 	return rcpnt[colName]
 }
 
-// Set sets the value for key
-func (rcpnt Recipient) Set(colName, value string) {
-	rcpnt[strings.TrimSpace(colName)] = value
-}
+// // Set sets the value for key
+// func (rcpnt Recipient) Set(colName, value string) {
+// 	rcpnt[strings.TrimSpace(colName)] = value
+// }
