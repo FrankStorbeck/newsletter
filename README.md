@@ -2,9 +2,10 @@
 newsletter – send a newsletter to a (sub)group of subscribers.
 
 ## SYNOPSIS
-newsletter [`-auth` _authfile_] [`-dry`] [`-from` _address_] [`-max` _m_]
-[`-quota` _q_] [`-selectors` _selfile_] [`-skip` _s_] [`-subject` _sbjct_]
-[`-subscribers` _subfile_] [`-version`] _template_
+newsletter [`-auth` _authfile_] [`-dry`] [`-emailcolname` _colname_]
+  [`-from` _address_] [`-max` _m_] [`-quota` _q_] [`-selectors` _selfile_]
+  [`-skip` _s_] [`-subject` _sbjct_] [`-subscribers` _subfile_] [`-version`]
+  _template_
 
 
 ## DESCRIPTION
@@ -15,6 +16,9 @@ The following options are available:
 
 `-auth` _autfile_: read the authorisation data for accessing an SMTP server
   from _authfile_. The default is `.auth.txt`.
+
+`-emailcolname` _colname_: set the column name for the column with the e-mail
+  adresses to  _colname_. The default is `email`.
 
 `-dry`: do a dry run, i.e. no newsletters will be sent.
 
@@ -48,9 +52,12 @@ Data are read from three files.
   Empty lines and lines starting with a `#` characters are skipped.
   The column names can be used in the template to format the newsletter.  
   E.g. if a column name is `name`, then the text element `{{.Get "name"}}` in
-  the template file will replaced by the field value. There must be one column
-  named _email_ holding a valid email address of the subscribers (if this field
-  is empty no email will be sent).
+  the template file will replaced by the field value.
+
+  There must be a column named holding valid email addresses of the subscribers.
+  The name for this column is _email_, but that van be changed in the argument
+  list. If the value is empty or if it is erroneously formatted no email will be
+  sent.
 
   As an example:
 ```
