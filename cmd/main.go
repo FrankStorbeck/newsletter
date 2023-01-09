@@ -6,13 +6,17 @@ import (
 	"log"
 	"math"
 	"os"
+	"strings"
 	"time"
 )
 
+var Version = "newsletter v5.0"
+
 type config struct {
 	dry                   bool          // run in dry mode
+	emailColName          string        // column name for the e-mail addresses
 	errLog                *log.Logger   // stream for logging errors
-	from                  string        // email-address of the originator
+	from                  string        // e-mail address of the originator
 	infLog                *log.Logger   // stream for logging info
 	maxRcpnts             int           // maximum number of newsletters to be sent
 	pathToAuthFile        string        // path to auth file
@@ -26,10 +30,12 @@ type config struct {
 func main() {
 	cfg := config{}
 
-	flag.BoolVar(&cfg.dry, "dry", false,
-		"Do dry run")
 	flag.StringVar(&cfg.pathToAuthFile, "auth", ".auth.txt",
 		"Path to auth file")
+	flag.BoolVar(&cfg.dry, "dry", false,
+		"Do dry run")
+	flag.StringVar(&cfg.emailColName, "emailcolname", "email",
+		"Column name for column with e-mail adresses")
 	flag.StringVar(&cfg.from, "from", "",
 		"Reply address")
 	flag.IntVar(&cfg.maxRcpnts, "max", 0,
@@ -49,9 +55,11 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("newsletter v4.1\n")
+		fmt.Printf("%s\n", Version)
 		return
 	}
+
+	cfg.emailColName = strings.ToLower(cfg.emailColName)
 
 	cfg.infLog = log.New(os.Stdout, "      ", log.Ldate|log.Ltime)
 	cfg.errLog = log.New(os.Stderr, "ERROR ", log.Ldate|log.Ltime)

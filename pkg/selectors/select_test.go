@@ -22,15 +22,16 @@ func TestSelect(t *testing.T) {
 		{"OK", "1;John;O';Doe;john@company.com;Street;10;8900;un;Yes;comment", nil},
 		{"Wrong ID", "2_;John;O';Doe;john@company.com;;;;;Yes", ErrNoMatch},
 		{"Wrong family name", "3;John;O';Did;john@company.com;;;;;Yes", ErrNoMatch},
-		{"No email", "4;John;O';Doe;;Street;10;8900;un;Yes", ErrNoMatch},
-		{"Wrong email", "5;John;O';Doe;john;Street;10;8900;un;Yes", ErrInvalidEMail},
+		{"No e-mail", "4;John;O';Doe;;Street;10;8900;un;Yes", ErrNoMatch},
+		{"Wrong e-mail", "5;John;O';Doe;john;Street;10;8900;un;Yes", ErrInvalidEMail},
 	}
 
-	colNames := []string{"id", "first name", "middle names", "family name", "email", "street", "number", "zip", "country", "wants newsletter"}
+	colNames := []string{"id", "first name", "middle names", "family name",
+		"email", "street", "number", "zip", "country", "wants newsletter"}
 
 	for _, tst := range tests {
 		record := strings.Split(tst.line, ";")
-		_, err := slctrs.Select(record, colNames)
+		recipient, err := slctrs.Select(record, colNames, 4)
 		switch {
 		case tst.err == nil && err != nil:
 			t.Errorf("%s: Select() returns an error %q, should be nil",
@@ -45,6 +46,12 @@ func TestSelect(t *testing.T) {
 					tst.err.Error())
 			}
 		default:
+			for i, name := range colNames {
+				if got := (*recipient).Get(name); got != record[i] {
+					t.Fatalf("%s: After Select() (*recipient).Get(%q) is %q, should be %q",
+						tst.name, name, got, record[i])
+				}
+			}
 		}
 	}
 }

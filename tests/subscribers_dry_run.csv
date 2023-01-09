@@ -1,4 +1,4 @@
-id;first name;middle names;family name;email               ;wants newsletter
+id;first name;middle names;family name;email_address       ;wants newsletter
 1 ;Bob       ;            ;Crypt      ;bob@crpt.com        ;y
 2 ;John      ;O'          ;Doe        ;john@company.com    ;Yes
 3 ;Joyce     ;O'          ;Doe        ;joyce@doe-family.com;Yes
