@@ -94,7 +94,7 @@ func (cfg *config) sendNewsletters(pathToTmplt string) error {
 			continue
 		}
 
-		eMailAddress := record[indexEMail]
+		eMailAddress := rcp.Get(cfg.emailColName)
 
 		plainBody, err := sendmail.Body("plainBody", tmplt, rcp)
 		if err != nil {

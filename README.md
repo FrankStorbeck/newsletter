@@ -42,7 +42,7 @@ The following options are available:
 
 ## FILES
 
-Data are read from three files.
+Data are read from four files.
 
 ### _subfile_
   A `csv` file holding the data about the subscribers. The values in each record
