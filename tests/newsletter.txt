@@ -17,7 +17,7 @@ Hello {{.Get "first name"}} {{.Get "middle names"}} {{.Get "family name"}}.
     </style>
   </head>
   <body>
-    <p>Hello {{.Get "first name"}} {{.Get "middle names"}} {{.Get "famil name"}}.</p>
+    <p>Hello {{.Get "first name"}} {{.Get "middle names"}} {{.Get "family name"}}.</p>
   </body>
 </html>
 {{end}}
